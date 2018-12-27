@@ -1,7 +1,8 @@
 import axios from 'axios';
+import Centrifuge from 'centrifuge';
 import { find } from 'lodash-es';
-import { apiPathCreatePayment } from '../settings';
-import postMessage from '../postMessage';
+import { apiPathCreatePayment, websocketServerUrl } from '../settings';
+import { postMessage } from '../postMessage';
 
 export default {
   namespaced: true,
@@ -15,6 +16,7 @@ export default {
     activePaymentMethodID: '',
     isLoading: false,
     isPaymentErrorVisible: false,
+    paymentStatus: 'NEW',
   },
 
   getters: {
@@ -48,6 +50,9 @@ export default {
     isPaymentErrorVisible(state, value) {
       state.isPaymentErrorVisible = value;
     },
+    paymentStatus(state, value) {
+      state.paymentStatus = value;
+    },
   },
 
   actions: {
@@ -58,6 +63,17 @@ export default {
       commit('initialEmail', options.email);
       commit('paymentMethods', formData.payment_methods);
       commit('activePaymentMethodID', formData.payment_methods[0].id);
+
+      const centrifuge = new Centrifuge(websocketServerUrl);
+      centrifuge.setToken(formData.token);
+
+      const channel = `payment:notify#${formData.id}`;
+
+      centrifuge.subscribe(channel, () => {
+        // console.log(11111, 'payment', message);
+      });
+
+      centrifuge.connect();
     },
 
     setActivePaymentMethod({ commit }, value) {
@@ -94,10 +110,18 @@ export default {
           apiPathCreatePayment,
           request,
         );
+        commit('paymentStatus', 'CREATED');
         postMessage('PAYMENT_CREATED', {
           redirectUrl: data.redirect_url,
         });
+
+        // @todo remove (just for testing)
+        setTimeout(() => {
+          postMessage('PAYMENT_SUCCESSFUL');
+          commit('paymentStatus', 'SUCCESSFUL');
+        }, 6000);
       } catch (error) {
+        commit('paymentStatus', 'FAILED_TO_CREATE');
         commit('isPaymentErrorVisible', true);
         postMessage('PAYMENT_FAILED_TO_CREATE');
       }

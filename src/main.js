@@ -8,7 +8,7 @@ import './plugins/vuelidate';
 import App from './App.vue';
 import store from './store/RootStore';
 import i18n from './i18n';
-import postMessage from './postMessage';
+import { postMessage, receiveMessages } from './postMessage';
 import './baseComponents';
 import './vueExtentions';
 
@@ -16,6 +16,11 @@ Vue.config.productionTip = false;
 
 const isPageInsideIframe = window.location !== window.parent.location;
 
+/**
+ * Cuts out language 2-letters code from navigator.language
+ *
+ * @return {String}
+ */
 function getLanguage() {
   if (navigator && navigator.language) {
     return navigator.language.slice(0, 2);
@@ -23,9 +28,15 @@ function getLanguage() {
   return 'en';
 }
 
+/**
+ * Mounts the app into element
+ *
+ * @param {Object} formData
+ * @param {Object} options
+ */
 async function mountApp(formData, options = {}) {
   if (isPageInsideIframe && process.env.NODE_ENV === 'development') {
-    assert(formData, 'The initial data recieved through postMessage is not defined');
+    assert(formData, 'The initial data supposed to be recieved through postMessage is not defined');
   } else {
     assert(formData, 'Define "window.P1PAYONE_FORM_DATA" property to set initial data');
   }
@@ -41,28 +52,24 @@ async function mountApp(formData, options = {}) {
   }).$mount('#p1payone-form');
 }
 
-function init() {
-  postMessage('INITED');
+postMessage('INITED');
 
-  if (isPageInsideIframe) {
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data.source !== 'PAYONE_JS_SDK') {
-        return;
+if (isPageInsideIframe) {
+  receiveMessages(window, {
+    REQUEST_INIT_FORM(data = {}) {
+      const { formData, options } = data;
+
+      /**
+       * Outside formData inserting is restricted in production mode
+       */
+      if (process.env.NODE_ENV === 'development') {
+        mountApp(formData, options);
+      } else {
+        mountApp(window.P1PAYONE_FORM_DATA, options);
       }
-      if (event.data.name === 'requestInitForm') {
-        const { formData, options } = event.data.data;
-        /** Outside formData inserting is restricted in production mode */
-        if (process.env.NODE_ENV === 'development') {
-          mountApp(formData, options);
-        } else {
-          mountApp(window.P1PAYONE_FORM_DATA, options);
-        }
-      }
-    });
-  } else {
-    /** When the form is opened by direct url in browser */
-    mountApp(window.P1PAYONE_FORM_DATA);
-  }
+    },
+  });
+} else {
+  // Case where the form is opened by as actual page inside browser, not inside iframe
+  mountApp(window.P1PAYONE_FORM_DATA);
 }
-
-init();

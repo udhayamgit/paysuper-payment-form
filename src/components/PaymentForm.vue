@@ -81,7 +81,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { required, email } from 'vuelidate/lib/validators';
 import PaymentFormMethods from './PaymentFormMethods.vue';
 import PaymentFormBankCard from './PaymentFormBankCard.vue';
-import postMessage from '../postMessage';
+import { postMessage } from '../postMessage';
 
 export default {
   name: 'PaymentForm',
@@ -93,10 +93,6 @@ export default {
 
   data() {
     return {
-      lastFormSize: {
-        width: 0,
-        height: 0,
-      },
       bankCard: {
         cardNumber: '',
         month: '',
@@ -130,19 +126,19 @@ export default {
 
   watch: {
     bankCard() {
-      this.requestIframeResize();
+      this.reportFormResize();
     },
     ewallet() {
-      this.requestIframeResize();
+      this.reportFormResize();
     },
     email() {
-      this.requestIframeResize();
+      this.reportFormResize();
     },
     activePaymentMethodID() {
-      this.requestIframeResize();
+      this.reportFormResize();
     },
     isPaymentErrorVisible() {
-      this.requestIframeResize();
+      this.reportFormResize();
     },
   },
 
@@ -168,14 +164,15 @@ export default {
   },
 
   mounted() {
-    this.requestIframeResize();
+    this.reportFormResize();
   },
 
   methods: {
+    ...mapActions(['reportResize']),
     ...mapActions('PaymentForm', ['setActivePaymentMethod', 'createPayment', 'hidePaymentError']),
 
     submitPaymentForm() {
-      this.requestIframeResize();
+      this.reportFormResize();
       this.hidePaymentError();
       this.$v.$touch();
 
@@ -200,20 +197,13 @@ export default {
       });
     },
 
-    requestIframeResize() {
+    reportFormResize() {
       setTimeout(() => {
         const newFormSize = {
           height: this.$el.offsetHeight,
           width: this.$el.offsetWidth,
         };
-        if (
-          this.lastFormSize.width === newFormSize.width
-          && this.lastFormSize.height === newFormSize.height
-        ) {
-          return;
-        }
-        postMessage('FORM_RESIZE', newFormSize);
-        this.lastFormSize = newFormSize;
+        this.reportResize(newFormSize);
       }, 0);
     },
   },
@@ -257,7 +247,6 @@ export default {
 .payment-form {
   background: $ui-color-white;
   border: 1px solid $ui-color-grey87;
-  width: 560px;
   box-sizing: border-box;
   color: $ui-color-grey13;
   font-family: $ui-font-family-common;
