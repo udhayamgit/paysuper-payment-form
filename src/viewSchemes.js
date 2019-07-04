@@ -84,6 +84,8 @@ export default {
     stubContentColorPrimary: 'rgba(255, 255, 255, 0.2)',
     stubContentColorSecondary: 'rgba(255, 255, 255, 0.1)',
     stubTotalColor: 'rgba(6, 234, 167, 0.2)',
+
+    paySystemBackgroundColor: '#fff',
   },
   light: {
     headerTextColor: '#71757a',
@@ -170,5 +172,7 @@ export default {
     stubContentColorPrimary: 'rgba(0, 0, 0, 0.2)',
     stubContentColorSecondary: 'rgba(0, 0, 0, 0.1)',
     stubTotalColor: 'rgba(6, 234, 167, 0.2)',
+
+    paySystemBackgroundColor: '#fff',
   },
 };

@@ -9,9 +9,10 @@
     @focus="$emit('focus')"
     @input="cardChange"
   />
-  <IconMastercard
-    v-if="cartType === 'mastercard'"
+  <IconPaysystem
+    v-if="cartType"
     :class="$style.systemIcon"
+    :type="cartType"
   />
 </div>
 </template>

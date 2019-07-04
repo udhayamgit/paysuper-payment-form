@@ -3,6 +3,7 @@ import LocaleChanger from '@/components/LocaleChanger.vue';
 import StubPreloaderFormModal from '@/components/StubPreloaderFormModal.vue';
 
 export default {
+  name: 'ModalForm',
   components: {
     LocaleChanger,
     StubPreloaderFormModal,

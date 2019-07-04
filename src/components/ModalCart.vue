@@ -2,6 +2,7 @@
 import StubPreloaderCartModal from '@/components/StubPreloaderCartModal.vue';
 
 export default {
+  name: 'ModalCart',
   components: {
     StubPreloaderCartModal,
   },
