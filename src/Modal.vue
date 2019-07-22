@@ -2,27 +2,30 @@
 import { mapState, mapActions } from 'vuex';
 import { gtagEvent } from '@/analytics';
 import ActionProcessing from '@/components/ActionProcessing.vue';
+import CartSection from '@/components/CartSection.vue';
+import FormSection from '@/components/FormSection.vue';
 import Modal from '@/components/Modal.vue';
 import ModalCart from '@/components/ModalCart.vue';
 import ModalForm from '@/components/ModalForm.vue';
-import CartSection from '@/components/CartSection.vue';
-import FormSection from '@/components/FormSection.vue';
 import OrderCreationError from '@/components/OrderCreationError.vue';
+import VerticalModal from '@/components/VerticalModal.vue';
 import { postMessage } from './postMessage';
 
 export default {
   components: {
+    ActionProcessing,
+    CartSection,
+    FormSection,
     Modal,
     ModalCart,
     ModalForm,
-    CartSection,
-    FormSection,
-    ActionProcessing,
     OrderCreationError,
+    VerticalModal,
   },
 
   data() {
     return {
+      isVerticalModal: false,
       opened: true,
     };
   },
@@ -35,10 +38,20 @@ export default {
     isLoading() {
       return this.paymentStatus === 'INITIAL';
     },
+
+    modalComponentName() {
+      return this.isVerticalModal ? 'VerticalModal' : 'Modal';
+    },
   },
 
   beforeMount() {
     postMessage('LOADED');
+
+    this.isVerticalModal = window.innerWidth < 580;
+
+    window.addEventListener('resize', () => {
+      this.isVerticalModal = window.innerWidth < 580;
+    });
   },
 
   methods: {
@@ -60,8 +73,9 @@ export default {
 </script>
 
 <template>
-<div :class="$style.layout">
-  <Modal
+<div :class="[$style.layout, { [$style._vertical]: isVerticalModal }]">
+  <component
+    :is="modalComponentName"
     :opened="opened"
     @close="closeModal"
   >
@@ -89,7 +103,7 @@ export default {
       :type="actionResult.type"
       @tryAgain="tryToCreateOrder"
     />
-  </Modal>
+  </component>
 </div>
 </template>
 
@@ -102,5 +116,9 @@ export default {
   justify-content: center;
   align-items: center;
   display: flex;
+
+  &._vertical {
+    flex-direction: column;
+  }
 }
 </style>
