@@ -13,6 +13,11 @@ export default {
       type: Boolean,
     },
   },
+  data() {
+    return {
+      hasLocaleChangerOpened: false,
+    };
+  },
 };
 </script>
 
@@ -30,15 +35,21 @@ export default {
     v-show="opened"
     :class="$style.layout"
   >
-    <VerticalModalHeader />
-
-    <slot />
-
-    <LocaleChanger
-      v-if="hasLocaleChangerOpened"
-      :class="$style.localeChanger"
-      @changeLocale="hasLocaleChangerOpened = false"
+    <VerticalModalHeader
+      :hasLocaleChangerOpened="hasLocaleChangerOpened"
+      @toggleLocaleChanger="hasLocaleChangerOpened = !hasLocaleChangerOpened"
+      @close="$emit('close')"
     />
+
+    <div :class="$style.content">
+      <slot />
+
+      <LocaleChanger
+        v-if="hasLocaleChangerOpened"
+        :class="$style.localeChanger"
+        @changeLocale="hasLocaleChangerOpened = false"
+      />
+    </div>
   </div>
 </transition>
 </template>
@@ -50,18 +61,26 @@ export default {
   flex-direction: column;
   width: 100%;
   align-items: center;
-  border-radius: 12px;
   overflow: hidden;
   background-color: #424c66;
   z-index: 10000;
   flex-grow: 1;
+}
+.content {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  max-height: calc(100% - 60px);
+  position: relative;
+  width: 100%;
+  align-items: center;
 }
 .localeChanger {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(100% - 70px);
+  height: calc(50% - 60px);
 }
 .enter,
 .leaveTo {

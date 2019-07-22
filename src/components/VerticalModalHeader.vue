@@ -3,11 +3,11 @@ import { gtagEvent } from '@/analytics';
 
 export default {
   props: {
-    projectName: {
-      required: true,
-      type: String,
-    },
     isLoading: {
+      default: false,
+      type: Boolean,
+    },
+    hasLocaleChangerOpened: {
       default: false,
       type: Boolean,
     },
@@ -34,6 +34,15 @@ export default {
       },
       [`.${this.$style.tipContent}`]: {
         color: this.$gui.tipContentColor,
+      },
+      [`.${this.$style.iconSupport}`]: {
+        fill: this.$gui.headerTextColor,
+      },
+      [`.${this.$style.link}:hover > .${this.$style.iconSupport}`]: {
+        fill: this.$gui.cartHoverTextColor,
+      },
+      [`.${this.$style.locale}.${this.$style._opened}::after`]: {
+        'border-bottom-color': this.$gui.localeChangerModalBoxColor,
       },
     });
   },
@@ -63,7 +72,7 @@ export default {
     <span
       :class="[$style.link, $style.locale, { [$style._opened]: hasLocaleChangerOpened }]"
       :title="$i18n.getLocaleLabel()"
-      @click="hasLocaleChangerOpened = !hasLocaleChangerOpened"
+      @click="$emit('toggleLocaleChanger')"
     >
       {{ $i18n.getLocaleLabel() }}
     </span>
@@ -151,6 +160,26 @@ export default {
 
   &:hover {
     text-decoration: none;
+  }
+}
+.iconSupport {
+  transition: fill 0.2s ease-out;
+}
+.locale {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &._opened::after {
+    position: absolute;
+    content: '';
+    bottom: 0px;
+    border: 8px solid transparent;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    box-sizing: border-box;
+    width: 16px;
   }
 }
 .tipLink {
